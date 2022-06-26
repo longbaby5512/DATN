@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../models/entities';
-import { CreateUserDTO, UserDTO } from '../models/dto';
 import { Repository } from 'typeorm';
+import { CreateUserDTO, UpdatedUserDTO, UserDTO } from '../models/dto';
 
 @Injectable()
 export class UserService {
@@ -10,12 +10,16 @@ export class UserService {
     @InjectRepository(User) private readonly repo: Repository<User>,
   ) {}
 
-  getByEmail = async (email: string): Promise<User> => {
-    return await this.repo.findOne({ email });
+  getByEmail = async (email: string): Promise<UserDTO> => {
+    return await this.repo.findOne({ email }).then((user: User) => {
+      return UserDTO.fromEntity(user);
+    });
   };
 
-  getById = async (id: string): Promise<User> => {
-    return await this.repo.findOne({ id });
+  getById = async (id: string): Promise<UserDTO> => {
+    return await this.repo.findOne({ id }).then((user: User) => {
+      return UserDTO.fromEntity(user);
+    });
   };
 
   getAll = async (start?: number, limit?: number): Promise<UserDTO[]> => {
@@ -30,9 +34,12 @@ export class UserService {
   };
 
   create = async (createUserDTO: CreateUserDTO): Promise<UserDTO> => {
-    const user: User = createUserDTO.toEntity();
-    return this.repo.save(user).then((user: User) => {
-      return UserDTO.fromEntity(user);
-    });
+    const user = this.repo.create(createUserDTO);
+    return await this.repo.save(user).then(UserDTO.fromEntity);
+  };
+
+  update = async (updatedUserDTO: UpdatedUserDTO) => {
+    const user = this.repo.create(updatedUserDTO);
+    return await this.repo.save(user).then(UserDTO.fromEntity);
   };
 }

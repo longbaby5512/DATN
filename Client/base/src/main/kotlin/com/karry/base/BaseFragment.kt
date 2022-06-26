@@ -1,7 +1,6 @@
 package com.karry.base
 
 import android.os.Bundle
-import android.text.Layout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,10 +11,11 @@ import androidx.viewbinding.ViewBinding
 /**
  * Base class for all [Fragment] instances
  */
-abstract class BaseFragment<VB: ViewBinding>(@LayoutRes layoutId: Int): Fragment(layoutId) {
+abstract class BaseFragment<VB : ViewBinding>(@LayoutRes private val layoutId: Int) :
+    Fragment(layoutId) {
     private var _binding: VB? = null
     abstract val bindLayout: (LayoutInflater, ViewGroup?, Boolean) -> VB
-    protected val binding get() = _binding!!
+    val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,7 +29,7 @@ abstract class BaseFragment<VB: ViewBinding>(@LayoutRes layoutId: Int): Fragment
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding= null
+        _binding = null
     }
 
     abstract fun prepareView(savedInstanceState: Bundle?)

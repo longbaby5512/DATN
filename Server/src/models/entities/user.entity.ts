@@ -1,6 +1,13 @@
 import { Exclude } from 'class-transformer';
 import { HashingService } from '../../security';
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  Index,
+  OneToOne,
+} from 'typeorm';
 import { IUser } from '../interfaces';
 import { Base } from '.';
 
@@ -12,13 +19,13 @@ export class User extends Base implements IUser {
     nullable: false,
     unique: true,
   })
+  @Index({ unique: true })
   email: string;
 
   @Column({
     type: 'varchar',
     length: 255,
     nullable: false,
-    name: 'first_name',
   })
   firstName: string;
 
@@ -26,7 +33,6 @@ export class User extends Base implements IUser {
     type: 'varchar',
     length: 255,
     nullable: false,
-    name: 'last_name',
   })
   lastName: string;
 
@@ -44,8 +50,21 @@ export class User extends Base implements IUser {
   @Exclude()
   salt: string;
 
+  @Column({
+    type: 'boolean',
+    nullable: false,
+  })
+  @Exclude()
+  status: boolean;
+
+  @Column({
+    type: 'integer',
+    nullable: false,
+    default: 0,
+  })
+  numberOfDevices: number;
+
   @BeforeInsert()
-  @BeforeUpdate()
   async hashPassword() {
     const { hash, salt } = await HashingService.hash(
       this.password,
@@ -53,5 +72,11 @@ export class User extends Base implements IUser {
     );
     this.password = hash;
     this.salt = salt;
+    this.status = this.numberOfDevices > 0;
+  }
+
+  @BeforeUpdate()
+  async checkActive() {
+    this.status = this.numberOfDevices > 0;
   }
 }

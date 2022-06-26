@@ -1,3 +1,9 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="input_margin_horizontal">@dimen/_32sdp</dimen>
+    <dimen name="text_size">@dimen/_14ssp</dimen>
+    <dimen name="btn_height">@dimen/_40sdp</dimen>
+    <dimen name="text_size_tv">@dimen/_11ssp</dimen>
+    <dimen name="proc_bar">@dimen/_50sdp</dimen>
+    <dimen name="input_layout_space">@dimen/_8sdp</dimen>
 </resources>

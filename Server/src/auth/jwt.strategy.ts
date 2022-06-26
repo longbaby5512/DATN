@@ -4,10 +4,6 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
 import { JwtPayload } from '../models/interfaces';
-import { UserDTO } from '../models/dto';
-import { Request } from 'express';
-import console from 'console';
-import { readFileSync } from 'fs';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -17,13 +13,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: readFileSync(configService.get('JWT_PUBLIC_KEY')),
-      algorithms: ['RS256'],
+      secretOrKey: configService.get('JWT_PUBLIC_KEY'),
+      algorithms: [configService.get('JWT_ALGORITHM')],
     });
   }
 
   async validate(payload: JwtPayload) {
-    console.log(JSON.stringify(payload));
     const user = await this.userService.getById(payload.userId);
     if (!user) {
       throw new HttpException(
@@ -31,6 +26,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         HttpStatus.UNAUTHORIZED,
       );
     }
-    return UserDTO.fromEntity(user);
+    user.password = undefined;
+    user.salt = undefined;
+    return user;
   }
 }

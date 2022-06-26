@@ -1,4 +1,5 @@
 require('dotenv').config();
+const isProduction = process.env.NODE_ENV === 'production';
 
 export = {
   type: 'postgres',
@@ -20,5 +21,5 @@ export = {
   },
   seeds: ['src/database/seeding/seeds/**/*{.ts,.js}'],
   factories: ['src/database/seeding/factories/**/*{.ts,.js}'],
-  ssl: process.env.NODE_ENV === 'PROD',
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
 };

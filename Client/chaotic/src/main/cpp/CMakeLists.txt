@@ -21,12 +21,11 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        chaotic.cxx
-        src/Utils.cxx
-        src/Constants.cxx
-        src/ChaoticMap.cxx
-        src/ChaoticCypher.cxx
-        src/Hash.cxx)
+        chaotic.cpp
+        src/Constants.cpp
+        src/ChaoticMap.cpp
+        src/ChaoticCypher.cpp
+        src/Hash.cpp)
 
 target_include_directories(chaotic PUBLIC "${PROJECT_SOURCE_DIR}/include")
 
@@ -52,7 +51,6 @@ target_link_libraries( # Specifies the target library.
 
         # Links the target library to the log library
         # included in the NDK.
-        ${log-lib}
-        )
+        ${log-lib})
 
 

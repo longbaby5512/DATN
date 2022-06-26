@@ -13,18 +13,19 @@ import { Logger } from '@nestjs/common';
   namespace: '/chat',
   cors: {
     origin: '*',
-  }
+  },
 })
-export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
   private logger: Logger = new Logger('ChatGateway');
 
-  afterInit(server: Server) {
+  afterInit(_server: Server) {
     this.logger.log('Initialized');
   }
-  handleConnection(client: Socket, ...args: any[]) {
+  handleConnection(client: Socket, ..._args: any[]) {
     this.logger.log(`Client connected: ${client.id}`);
   }
   handleDisconnect(client: Socket) {
@@ -33,6 +34,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('send_message')
   listenForMessages(client: Socket, payload: string): void {
-    this.server.sockets.emit('receive_message', payload);
+    client.to('chat').emit('message', payload);
   }
 }

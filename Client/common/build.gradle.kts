@@ -1,20 +1,25 @@
 plugins {
-    id(Libs.Plugins.LIBRARY)
-    id(Libs.Plugins.KOTLIN_ANDROID)
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+    kotlin("kapt")
+    id(Libs.Plugins.GOOGLE_SERVICES)
 }
 
 android {
     compileSdk = Versions.Apps.COMPILE_SDK
+    buildToolsVersion = Versions.Apps.BUILD_TOOLS_VERSION
 
     defaultConfig {
         minSdk = Versions.Apps.MIN_SDK
         targetSdk = Versions.Apps.TARGET_SDK
 
+        multiDexEnabled = Configs.MULTI_DEX_ENABLED
+
         testInstrumentationRunner = Configs.TEST_INSTRUMENTATION_RUNNER
         consumerProguardFiles("consumer-rules.pro")
         externalNativeBuild {
             cmake {
-                cppFlags("-std=c++17")
+                cppFlags += "-std=c++17"
             }
         }
     }
@@ -51,4 +56,28 @@ dependencies {
     testImplementation(Libs.Test.JUNIT)
     androidTestImplementation(Libs.AndroidTest.JUNIT)
     androidTestImplementation(Libs.AndroidTest.ESPRESSO_CORE)
+
+    implementation(Libs.AndroidX.SECURITY_CRYPTO)
+    implementation(Libs.SECURE_PREFERENCES)
+
+    // Moshi
+    implementation(Libs.Google.GSON)
+
+    implementation(Libs.Squareup.LOGGING_INTERCEPTOR)
+
+    // Dagger Hilt
+    implementation(Libs.Google.HILT)
+    kapt(Libs.Google.HILT_COMPILER)
+
+    // Firebase
+    implementation(platform(Libs.Google.Firebase.BOM))
+    implementation(Libs.Google.Firebase.DATABASE)
+    implementation(Libs.Google.Firebase.COMMON)
+
+    // Timber
+    implementation(Libs.TIMBER)
+}
+
+kapt {
+    correctErrorTypes = Configs.CORRECT_ERROR_TYPE
 }

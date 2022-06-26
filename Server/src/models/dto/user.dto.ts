@@ -1,14 +1,21 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsEmail,
+  IsInt,
   IsNotEmpty,
   IsString,
   IsUUID,
+  Min,
   MinLength,
 } from 'class-validator';
 import { User } from '../entities';
 
-export class CreateUserDTO implements Readonly<CreateUserDTO> {
+export class UserDTO implements Readonly<UserDTO> {
+  @IsNotEmpty()
+  @IsUUID()
+  id: string;
+
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsEmail()
@@ -20,79 +27,73 @@ export class CreateUserDTO implements Readonly<CreateUserDTO> {
   @MinLength(8)
   password: string;
 
-  @ApiProperty({ required: true, name: 'first_name' })
+  salt: string;
+
+  @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
   firstName: string;
 
-  @ApiProperty({ required: true, name: 'last_name' })
+  @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
   lastName: string;
 
-  static fromEntity = (user: User): CreateUserDTO => {
-    const createUserDTO = new CreateUserDTO();
-    createUserDTO.email = user.email;
-    createUserDTO.password = user.password;
-    createUserDTO.firstName = user.firstName;
-    createUserDTO.lastName = user.lastName;
-    return createUserDTO;
-  };
+  @IsInt()
+  @Min(0)
+  numberOfDevices: number;
+
+  static fromEntity(user: User): UserDTO {
+    const userDTO = new UserDTO();
+    userDTO.id = user.id;
+    userDTO.email = user.email;
+    userDTO.password = user.password;
+    userDTO.salt = user.salt;
+    userDTO.firstName = user.firstName;
+    userDTO.lastName = user.lastName;
+    userDTO.numberOfDevices = user.numberOfDevices;
+    return userDTO;
+  }
 
   toEntity(): User {
     const user = new User();
+    user.id = this.id;
     user.email = this.email;
     user.password = this.password;
+    user.salt = this.salt;
     user.firstName = this.firstName;
     user.lastName = this.lastName;
+    user.numberOfDevices = this.numberOfDevices;
     return user;
+  }
+
+  toUpdateDTO(): UpdatedUserDTO {
+    const updatedUserDTO = new UpdatedUserDTO();
+    updatedUserDTO.id = this.id;
+    updatedUserDTO.email = this.email;
+    updatedUserDTO.firstName = this.firstName;
+    updatedUserDTO.lastName = this.lastName;
+    updatedUserDTO.numberOfDevices = this.numberOfDevices;
+    return updatedUserDTO;
   }
 }
 
-export class UserDTO implements Readonly<UserDTO> {
-  @IsNotEmpty()
-  @IsEmail()
-  email: string;
+export class CreateUserDTO
+  extends OmitType(UserDTO, ['id', 'salt', 'numberOfDevices', 'toUpdateDTO'])
+  implements Readonly<CreateUserDTO> {}
 
-  @IsString()
-  @IsNotEmpty()
-  firstName: string;
+export class UpdatedUserDTO
+  extends OmitType(UserDTO, ['salt', 'password', 'toEntity', 'toUpdateDTO'])
+  implements Readonly<UpdatedUserDTO> {}
 
-  @IsString()
-  @IsNotEmpty()
-  lastName: string;
-
-  @IsUUID()
-  @IsNotEmpty()
-  id: string;
-
-  static fromEntity = (user: User): UserDTO => {
-    const userDTO = new UserDTO();
-    userDTO.email = user.email;
-    userDTO.firstName = user.firstName;
-    userDTO.lastName = user.lastName;
-    userDTO.id = user.id;
-    return userDTO;
-  };
-
-  toEntity = (): User => {
-    const user = new User();
-    user.email = this.email;
-    user.firstName = this.firstName;
-    user.lastName = this.lastName;
-    user.id = this.id;
-    return user;
-  };
-}
-
-export class LoginUserDTO implements Readonly<LoginUserDTO> {
-  @IsNotEmpty()
-  @IsEmail()
-  @ApiProperty({ required: true })
-  email: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({ required: true })
-  password: string;
-}
+export class LoginUserDTO
+  extends OmitType(UserDTO, [
+    'firstName',
+    'lastName',
+    'id',
+    'salt',
+    'toEntity',
+    'numberOfDevices',
+    'toUpdateDTO',
+  ])
+  implements Readonly<LoginUserDTO> {}

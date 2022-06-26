@@ -1,0 +1,4 @@
+<resources>
+    <dimen name="fab_margin">@dimen/_16sdp</dimen>
+    <dimen name="proc_bar">@dimen/_50sdp</dimen>
+</resources>

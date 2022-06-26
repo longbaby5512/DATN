@@ -25,12 +25,14 @@ export class TypeOrmConfig {
         entitiesDir: 'src/models/entities',
         subscribersDir: 'src/models/subscribers',
       },
-      ssl: TypeOrmConfig.isProduction(configService),
+      ssl: TypeOrmConfig.isProduction(configService)
+        ? { rejectUnauthorized: false }
+        : false,
     };
     return result;
   };
   static isProduction = (configService: ConfigService): boolean => {
-    return configService.get('NODE_ENV') === 'PROD';
+    return configService.get('NODE_ENV') === 'production';
   };
 }
 

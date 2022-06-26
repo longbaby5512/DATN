@@ -1,9 +1,10 @@
 
 plugins {
-    id(Libs.Plugins.APPLICATION)
-    id(Libs.Plugins.KOTLIN_ANDROID)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
     kotlin("kapt")
     id(Libs.Plugins.DAGGER_HILT)
+
 }
 
 android {
@@ -15,6 +16,7 @@ android {
         targetSdk = Versions.Apps.TARGET_SDK
         versionCode = Versions.Apps.VERSION_CODE
         versionName = Versions.Apps.VERSION_NAME
+        multiDexEnabled = Configs.MULTI_DEX_ENABLED
 
         testInstrumentationRunner = Configs.TEST_INSTRUMENTATION_RUNNER
     }
@@ -43,6 +45,11 @@ android {
 dependencies {
     implementation(project(":base"))
     implementation(project(":account_feature"))
+    implementation(project(":common"))
+    implementation(project(":data"))
+    implementation(project(":remote"))
+    implementation(project(":domain"))
+    implementation(project(":chat_feature"))
 
     implementation(Libs.AndroidX.CORE_KTX)
     implementation(Libs.AndroidX.APPCOMPAT)
@@ -51,20 +58,36 @@ dependencies {
     implementation(Libs.AndroidX.NAVIGATION_FRAGMENT_KTX)
     implementation(Libs.AndroidX.NAVIGATION_UI_KTX)
 
+
     testImplementation(Libs.Test.JUNIT)
     androidTestImplementation(Libs.AndroidTest.JUNIT)
     androidTestImplementation(Libs.AndroidTest.ESPRESSO_CORE)
 
     implementation(Libs.LOTTIE)
+    implementation(Libs.Squareup.LOGGING_INTERCEPTOR)
 
-    // Dagger Hilt
-    implementation(Libs.Google.DaggerHilt.HILT_ANDROID)
-    kapt(Libs.Google.DaggerHilt.HILT_ANDROID_COMPILER)
 
     //Timber
     implementation(Libs.TIMBER)
+
+    // Dagger Hilt
+    implementation(Libs.Google.HILT)
+    kapt(Libs.Google.HILT_COMPILER)
+
+    // Retrofit
+    implementation(Libs.Squareup.RETROFIT)
+    implementation(Libs.Squareup.CONVERTER_GSON)
+    implementation(Libs.Squareup.LOGGING_INTERCEPTOR)
+
+    // SSP - SDP
+    implementation(Libs.Size.SSP)
+    implementation(Libs.Size.SDP)
 }
 
 kapt {
     correctErrorTypes = Configs.CORRECT_ERROR_TYPE
+}
+
+hilt {
+    enableAggregatingTask = true
 }

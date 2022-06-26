@@ -1,14 +1,18 @@
 plugins {
-    id(Libs.Plugins.LIBRARY)
-    id(Libs.Plugins.KOTLIN_ANDROID)
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
     compileSdk = Versions.Apps.COMPILE_SDK
+    buildToolsVersion = Versions.Apps.BUILD_TOOLS_VERSION
 
     defaultConfig {
         minSdk = Versions.Apps.MIN_SDK
         targetSdk = Versions.Apps.TARGET_SDK
+
+
+        multiDexEnabled = Configs.MULTI_DEX_ENABLED
 
         testInstrumentationRunner = Configs.TEST_INSTRUMENTATION_RUNNER
         consumerProguardFiles("consumer-rules.pro")

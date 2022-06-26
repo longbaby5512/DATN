@@ -1,6 +1,6 @@
 plugins {
-    id(Libs.Plugins.LIBRARY)
-    id(Libs.Plugins.KOTLIN_ANDROID)
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
     kotlin("kapt")
     id(Libs.Plugins.DAGGER_HILT)
 }
@@ -11,6 +11,8 @@ android {
     defaultConfig {
         minSdk = Versions.Apps.MIN_SDK
         targetSdk = Versions.Apps.TARGET_SDK
+        multiDexEnabled = Configs.MULTI_DEX_ENABLED
+
 
         testInstrumentationRunner = Configs.TEST_INSTRUMENTATION_RUNNER
     }
@@ -34,6 +36,8 @@ android {
     buildFeatures {
         viewBinding = Configs.VIEW_BINDING
     }
+    buildToolsVersion = Versions.Apps.BUILD_TOOLS_VERSION
+
 }
 
 dependencies {
@@ -44,21 +48,43 @@ dependencies {
     implementation(Libs.AndroidX.CONSTRAINT_LAYOUT)
     implementation(Libs.AndroidX.NAVIGATION_FRAGMENT_KTX)
     implementation(Libs.AndroidX.NAVIGATION_UI_KTX)
+
     implementation(project(mapOf("path" to ":base")))
     implementation(project(mapOf("path" to ":chaotic")))
     implementation(project(mapOf("path" to ":common")))
+    implementation(project(mapOf("path" to ":domain")))
+    implementation(project(mapOf("path" to ":data")))
+
     testImplementation(Libs.Test.JUNIT)
     androidTestImplementation(Libs.AndroidTest.JUNIT)
     androidTestImplementation(Libs.AndroidTest.ESPRESSO_CORE)
+
+    // Coroutines
+    implementation(Libs.KotlinX.KOTLINX_COROUTINES_CORE)
+    implementation(Libs.KotlinX.KOTLINX_COROUTINES_ANDROID)
 
     //Timber
     implementation(Libs.TIMBER)
 
     // Dagger Hilt
-    implementation(Libs.Google.DaggerHilt.HILT_ANDROID)
-    kapt(Libs.Google.DaggerHilt.HILT_ANDROID_COMPILER)
+    implementation(Libs.Google.HILT)
+    kapt(Libs.Google.HILT_COMPILER)
+
+    // Viewmodel
+    implementation(Libs.AndroidX.VIEWMODEL_KTX)
+    implementation(Libs.AndroidX.SAVED_STATE)
+    implementation(Libs.AndroidX.LIVEDATA_KTX)
+
+    // SSP - SDP
+    implementation(Libs.Size.SSP)
+    implementation(Libs.Size.SDP)
+
 }
 
 kapt {
     correctErrorTypes = Configs.CORRECT_ERROR_TYPE
+}
+
+hilt {
+    enableAggregatingTask = true
 }

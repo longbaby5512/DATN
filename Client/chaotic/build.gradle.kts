@@ -1,14 +1,16 @@
 plugins {
-    id(Libs.Plugins.LIBRARY)
-    id(Libs.Plugins.KOTLIN_ANDROID)
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+
 }
 
 android {
     compileSdk = Versions.Apps.COMPILE_SDK
-
     defaultConfig {
         minSdk = Versions.Apps.MIN_SDK
         targetSdk = Versions.Apps.TARGET_SDK
+
+        multiDexEnabled = Configs.MULTI_DEX_ENABLED
 
         testInstrumentationRunner = Configs.TEST_INSTRUMENTATION_RUNNER
         consumerProguardFiles("consumer-rules.pro")
@@ -30,8 +32,8 @@ android {
     }
     externalNativeBuild {
         cmake {
-            path = file(Configs.CMAKE_FILE_PATH)
-            version = Versions.CMAKE_VERSION
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.18.1"
         }
     }
     compileOptions {
@@ -41,6 +43,8 @@ android {
     kotlinOptions {
         jvmTarget = Configs.JAVA_VERSION.toString()
     }
+    buildToolsVersion = Versions.Apps.BUILD_TOOLS_VERSION
+    ndkVersion = Versions.Apps.NDK_VERSION
 }
 
 dependencies {
@@ -51,4 +55,6 @@ dependencies {
     testImplementation(Libs.Test.JUNIT)
     androidTestImplementation(Libs.AndroidTest.JUNIT)
     androidTestImplementation(Libs.AndroidTest.ESPRESSO_CORE)
+
+    implementation(Libs.TIMBER)
 }

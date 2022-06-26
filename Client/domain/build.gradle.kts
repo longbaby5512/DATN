@@ -1,16 +1,20 @@
 plugins {
-    id(Libs.Plugins.LIBRARY)
-    id(Libs.Plugins.KOTLIN_ANDROID)
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
     kotlin("kapt")
     id(Libs.Plugins.DAGGER_HILT)
+
 }
 
 android {
     compileSdk = Versions.Apps.COMPILE_SDK
+    buildToolsVersion = Versions.Apps.BUILD_TOOLS_VERSION
 
     defaultConfig {
         minSdk = Versions.Apps.MIN_SDK
         targetSdk = Versions.Apps.TARGET_SDK
+
+        multiDexEnabled = Configs.MULTI_DEX_ENABLED
 
         testInstrumentationRunner = Configs.TEST_INSTRUMENTATION_RUNNER
         consumerProguardFiles("consumer-rules.pro")
@@ -39,6 +43,8 @@ android {
 }
 
 dependencies {
+    implementation(project(mapOf("path" to ":common")))
+    implementation(project(mapOf("path" to ":data")))
 
     implementation(Libs.AndroidX.CORE_KTX)
     implementation(Libs.AndroidX.APPCOMPAT)
@@ -47,14 +53,27 @@ dependencies {
     androidTestImplementation(Libs.AndroidTest.JUNIT)
     androidTestImplementation(Libs.AndroidTest.ESPRESSO_CORE)
 
-    // Dagger Hilt
-    implementation(Libs.Google.DaggerHilt.HILT_ANDROID)
-    kapt(Libs.Google.DaggerHilt.HILT_ANDROID_COMPILER)
-
     //Timber
     implementation(Libs.TIMBER)
+
+    // Retrofit
+    implementation(Libs.Squareup.RETROFIT)
+    implementation(Libs.Squareup.CONVERTER_GSON)
+    implementation(Libs.Squareup.LOGGING_INTERCEPTOR)
+
+    // Coroutines
+    implementation(Libs.KotlinX.KOTLINX_COROUTINES_CORE)
+    implementation(Libs.KotlinX.KOTLINX_COROUTINES_ANDROID)
+
+    // Dagger Hilt
+    implementation(Libs.Google.HILT)
+    kapt(Libs.Google.HILT_COMPILER)
 }
 
 kapt {
     correctErrorTypes = Configs.CORRECT_ERROR_TYPE
+}
+
+hilt {
+    enableAggregatingTask = true
 }

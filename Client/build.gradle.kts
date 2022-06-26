@@ -1,16 +1,16 @@
 buildscript {
     dependencies {
-        classpath(Libs.BuildScripts.SAFE_ARGS)
-        classpath(Libs.BuildScripts.DAGGER_HILT)
+        classpath("androidx.navigation:navigation-safe-args-gradle-plugin:${Versions.AndroidX.SAFE_ARGS}")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:${Versions.Google.DAGGER}")
+        classpath("com.google.gms:google-services:${Versions.Google.GOOGLE_SERVICES}")
     }
 }
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id(Libs.Plugins.APPLICATION).version(Versions.ANDROID_PLUGIN).apply(false)
-    id(Libs.Plugins.LIBRARY).version(Versions.ANDROID_PLUGIN).apply(false)
-    id(Libs.Plugins.KOTLIN_ANDROID).version(Versions.KOTLIN).apply(false)
-    id(Libs.Plugins.KOTLIN_JVM).version(Versions.KOTLIN).apply(false)
+    id("com.android.application") version "7.3.0-beta04" apply false
+    id("com.android.library") version "7.3.0-beta04" apply false
+    id("org.jetbrains.kotlin.android") version "1.7.0" apply false
 }
 
 tasks.register("clean", Delete::class) {

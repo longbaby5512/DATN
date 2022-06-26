@@ -3,31 +3,18 @@ import { AppModule } from './modules/app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as helmet from 'helmet';
 import * as compression from 'compression';
-import { ValidationPipe } from '@nestjs/common';
-import { Logger } from 'nestjs-pino';
-import { readFile, readFileSync } from 'fs';
-import express from 'express';
-import { ExpressAdapter } from '@nestjs/platform-express';
-import * as http from 'http';
-import * as https from 'https';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 require('dotenv').config();
 
-
 async function bootstrap() {
-
   const configService = new ConfigService();
+  const isProduction = configService.get<string>('NODE_ENV') === 'production';
 
-  const httpsOptions: https.ServerOptions = {
-    key: readFileSync(configService.get('SSL_KEY')),
-    cert: readFileSync(configService.get('SSL_CERT')),
-  };
 
-  const server = express();
-
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
-    httpsOptions,
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'debug', 'log', 'verbose'],
   });
   app.enableCors();
   app.useGlobalPipes(
@@ -35,12 +22,6 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
-
-  const logger = app.get(Logger);
-
-  app.useLogger(logger);
-  app.flushLogs();
 
   const config = new DocumentBuilder()
     .setTitle('Example')
@@ -51,25 +32,20 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  const isProduction = configService.get<string>('NODE_ENV') === 'PROD';
-
   if (isProduction) {
     app.use(helmet.default());
     app.use(compression.default());
   }
 
-  await app.init();
-  http.createServer(server).listen(configService.get('HTTP_PORT'), () => {
-    logger.log(
-      `HTTP server listening on port ${configService.get('HTTP_PORT')}`,
-    );
-  });
-  https
-    .createServer(httpsOptions, server)
-    .listen(configService.get('HTTPS_PORT'), () => {
-      logger.log(
-        `HTTPS server listening on port ${configService.get('HTTPS_PORT')}`,
-      );
+  const port = configService.get<number>('PORT') || 3000;
+
+  await app
+    .listen(port)
+    .then(() => {
+      new Logger().log(`Server running on port ${port}`);
+    })
+    .catch((err) => {
+      new Logger().error(err);
     });
 }
 bootstrap();

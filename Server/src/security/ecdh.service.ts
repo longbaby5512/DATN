@@ -1,7 +1,7 @@
 import crypto, { ECDH } from 'crypto';
 
 export class ECDHService {
-  readonly ecdh: ECDH;
+  private readonly ecdh: ECDH;
 
   constructor(mode = 'secp256k1') {
     this.ecdh = crypto.createECDH(mode);
@@ -27,10 +27,7 @@ export class ECDHService {
     return hash.digest('hex');
   }
 
-  async generateKeysAsync(): Promise<{
-    publicKey: string;
-    privateKey: string;
-  }> {
+  async generateKeysAsync(): Promise<{ publicKey: string; privateKey: string }> {
     this.ecdh.generateKeys();
     return {
       publicKey: this.ecdh.getPublicKey().toString('hex'),

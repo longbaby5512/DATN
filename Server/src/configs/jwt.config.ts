@@ -1,10 +1,9 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModuleOptions } from '@nestjs/jwt';
-import { readFileSync } from 'fs';
 
 export class JwtConfig {
   static getJwtConfig(configService: ConfigService): JwtModuleOptions {
-    const privateKey = readFileSync(configService.get('JWT_PRIVATE_KEY'));
+    const privateKey = configService.get('JWT_PRIVATE_KEY');
     const result: JwtModuleOptions = {
       secret: privateKey,
       signOptions: {
