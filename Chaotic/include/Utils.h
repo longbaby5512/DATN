@@ -10,33 +10,46 @@
 #include <algorithm>
 #include <numeric>
 #include <execution>
+#include <algorithm>
+#include <cassert>
 
-typedef uint_fast8_t byte;
+typedef unsigned char byte;
 typedef std::vector<byte> bytes;
 typedef std::vector<double> doubles;
 
-class Utils {
-public:
-
-    template<class T>
-    static T max(T a, T b, T c) {
-        return std::max(a, std::max(b, c));
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const std::vector<T> &v) {
+    os << "[";
+    for (auto i = 0; i < v.size(); ++i) {
+        os << v[i];
+        if (i != v.size() - 1) {
+            os << ", ";
+        }
     }
+    os << "]";
+    return os;
+}
 
-    template<class T>
-    static T min(T a, T b, T c) {
-        return std::min(a, std::min(b, c));
-    }
 
-    static std::string byte2hex(const bytes &);
+std::string byte2hex(const bytes &, size_t);
+bytes hex2byte(const std::string &);
+std::string bytes2string(const bytes &, size_t);
+bytes string2bytes(const std::string &);
 
-    static bytes hex2byte(const std::string &);
+template<typename ForwardIterator, typename Compare=std::less<typename std::iterator_traits<ForwardIterator>::value_type>>
+std::vector<size_t> argsort(ForwardIterator first, ForwardIterator last, Compare comp = Compare()) {
+    using value_type = typename std::iterator_traits<ForwardIterator>::value_type;
+    using difference_type = typename std::iterator_traits<ForwardIterator>::difference_type;
+    difference_type dist = std::distance(first, last);
+    std::vector<size_t> indices(dist);
+    std::iota(indices.begin(), indices.end(), 0);
+    std::sort(indices.begin(), indices.end(), [&first, &comp](size_t left, size_t right) { return comp(*std::next(first, left), *std::next(first, right)); });
+    return indices;
+}
 
-    static std::string bytes2string(const bytes &);
-
-    static bytes string2bytes(const std::string &);
-
-};
-
+template<typename Base, typename T>
+inline bool instanceof(std::unique_ptr<T> &ptr) {
+    return dynamic_cast<Base *>(ptr.get()) != nullptr;
+}
 
 #endif //CHAOTIC_UTILS_H

@@ -7,26 +7,34 @@
 
 #include "Utils.h"
 
-enum ChaoticType {
-    LOGISTIC = 0,
-    SIN = 1,
-};
-
-std::ostream &operator<<(std::ostream &os, const ChaoticType &type);
 
 
 class ChaoticMap {
 public:
+    virtual doubles sequence (const doubles&, size_t) = 0;
+    virtual doubles key(const bytes&) = 0;
+    virtual std::string name() = 0;
 
-    static doubles generateSequence(ChaoticType type, const doubles& key, size_t iter);
-    static doubles generateKey(ChaoticType type, const bytes& digest);
+    static std::unique_ptr<ChaoticMap> create(int);
+};
 
-private:
-    static doubles Logistic(const doubles&, size_t);
-    static doubles Sin(const doubles&, size_t);
+class Logistic: public ChaoticMap {
+public:
+    doubles sequence(const doubles &, size_t) override;
 
-    static doubles logisticKey(bytes digest);
-    static doubles sinKey(bytes digest);
+    doubles key(const bytes &) override;
+
+    std::string name() override;
+};
+
+class Sin: public ChaoticMap {
+public:
+    doubles sequence(const doubles &, size_t) override;
+
+    doubles key(const bytes &) override;
+
+    std::string name() override;
+
 };
 
 #endif //CHAOTIC_CHAOTICMAP_H

@@ -1,28 +1,24 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './modules/app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as helmet from 'helmet';
 import * as compression from 'compression';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import * as helmet from 'helmet';
+import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-
-require('dotenv').config();
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 
 async function bootstrap() {
-  const configService = new ConfigService();
+  const logger = new Logger('NestApplication');
+
+  const app = await NestFactory.create(AppModule);
+  const configService: ConfigService = app.get(ConfigService);
+  const port: number = configService.get<number>('PORT');
   const isProduction = configService.get<string>('NODE_ENV') === 'production';
-
-
-  const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'debug', 'log', 'verbose'],
-  });
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
     }),
   );
-
   const config = new DocumentBuilder()
     .setTitle('Example')
     .setDescription('The example API description')
@@ -34,18 +30,11 @@ async function bootstrap() {
 
   if (isProduction) {
     app.use(helmet.default());
-    app.use(compression.default());
+    app.use(compression());
   }
-
-  const port = configService.get<number>('PORT') || 3000;
-
   await app
     .listen(port)
-    .then(() => {
-      new Logger().log(`Server running on port ${port}`);
-    })
-    .catch((err) => {
-      new Logger().error(err);
-    });
+    .then(() => logger.log(`Application listening on port ${port}`))
+    .catch((err) => logger.error(err));
 }
 bootstrap();

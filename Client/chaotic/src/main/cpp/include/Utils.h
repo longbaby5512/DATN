@@ -1,32 +1,68 @@
-//
-// Created by Long Kenvy on 28/05/2022.
-//
-
-#ifndef CHAOTIC_UTILS_H
-#define CHAOTIC_UTILS_H
+#ifndef CHAT_APP_UTILS_H
+#define CHAT_APP_UTILS_H
 
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <execution>
+#include <algorithm>
+#include <cassert>
 
+#include <android/log.h>
+#include <sstream>
 
-typedef uint_fast8_t byte;
+#define TAG "MY_TAG"
+
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,    TAG, __VA_ARGS__)
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN,     TAG, __VA_ARGS__)
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,     TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,    TAG, __VA_ARGS__)
+
+typedef unsigned char byte;
 typedef std::vector<byte> bytes;
 typedef std::vector<double> doubles;
 
-class Utils {
-public:
-    template<class T>
-    static T max(T a, T b, T c) {
-        return std::max(a, std::max(b, c));
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const std::vector<T> &v) {
+    os << "[";
+    for (auto i = 0; i < v.size(); ++i) {
+        os << v[i];
+        if (i != v.size() - 1) {
+            os << ", ";
+        }
     }
-
-    template<class T>
-    static T min(T a, T b, T c) {
-        return std::min(a, std::min(b, c));
-    }
-};
+    os << "]";
+    return os;
+}
 
 
-#endif //CHAOTIC_UTILS_H
+template <typename T>
+std::string to_string(std::vector<T> v) {
+    std::stringstream ss;
+    ss << v;
+    return ss.str();
+}
+
+std::string byte2hex(const bytes &);
+bytes hex2byte(const std::string &);
+std::string bytes2string(const bytes &);
+bytes string2bytes(const std::string &);
+
+template<typename ForwardIterator, typename Compare=std::less<typename std::iterator_traits<ForwardIterator>::value_type>>
+std::vector<size_t> argsort(ForwardIterator first, ForwardIterator last, Compare comp = Compare()) {
+    using value_type = typename std::iterator_traits<ForwardIterator>::value_type;
+    using difference_type = typename std::iterator_traits<ForwardIterator>::difference_type;
+    difference_type dist = std::distance(first, last);
+    std::vector<size_t> indices(dist);
+    std::iota(indices.begin(), indices.end(), 0);
+    std::sort(indices.begin(), indices.end(), [&first, &comp](size_t left, size_t right) { return comp(*std::next(first, left), *std::next(first, right)); });
+    return indices;
+}
+
+template<typename Base, typename T>
+inline bool instanceof(std::unique_ptr<T> &ptr) {
+    return dynamic_cast<Base *>(ptr.get()) != nullptr;
+}
+
+#endif //CHAT_APP_UTILS_H

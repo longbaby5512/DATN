@@ -1,76 +1,66 @@
-//
-// Created by Long Kenvy on 28/05/2022.
-//
+#ifndef CHAT_APP_CHAOTICCYPHER_H
+#define CHAT_APP_CHAOTICCYPHER_H
 
-#ifndef CHAOTIC_CHAOTICCYPHER_H
-#define CHAOTIC_CHAOTICCYPHER_H
-
-#include <functional>
+#include <memory>
 
 #include "Utils.h"
 #include "ChaoticMap.h"
-#include "Constants.h"
 
 class ChaoticCypher {
 public:
+    static constexpr int ENCRYPT_MODE = 0;
+    static constexpr int DECRYPT_MODE = 1;
 
-    enum Mode {
-        ENCRYPT = 0,
-        DECRYPT = 1,
-    };
+public:
 
-    void init(Mode, const bytes &);
+    void init(int, const bytes &);
 
-    void init(Mode, const std::string &);
-
-
-    bytes doFinal(const bytes &);
-
-    bytes doFinal(const std::string &);
+    void init(int, const std::string &);
 
 
-    class Builder {
-    public:
-        Builder &setPermutationAlgorithm(ChaoticType);
+    bytes doFinal(bytes &);
 
-        Builder &setSubstitutionAlgorithm(ChaoticType);
+    bytes doFinal(std::string &);
 
-        Builder &setDiffusionAlgorithm(ChaoticType);
 
-        ChaoticCypher build();
-
-    private:
-        ChaoticType permType = ChaoticType::LOGISTIC;
-        ChaoticType subType = ChaoticType::LOGISTIC;
-        ChaoticType diffType = ChaoticType::LOGISTIC;
-    };
-
+    friend std::ostream &operator<<(std::ostream &, const ChaoticCypher &);
 
     std::string info();
 
 private:
-    ChaoticType permType;
-    ChaoticType subType;
-    ChaoticType diffType;
-    doubles key1, key2, key3;
+    std::unique_ptr<ChaoticMap> permMap;
+    std::unique_ptr<ChaoticMap> subMap;
+    std::unique_ptr<ChaoticMap> diffMap;
+    doubles keyPerm, keySub, keyDiff;
     int mode{};
+    bytes data;
+public:
+    explicit ChaoticCypher(
+            std::unique_ptr<ChaoticMap> permMap = std::make_unique<Logistic>(),
+            std::unique_ptr<ChaoticMap> subMap = std::make_unique<Logistic>(),
+            std::unique_ptr<ChaoticMap> diffMap = std::make_unique<Logistic>()
+    );
 
-    explicit ChaoticCypher();
+    ChaoticCypher(ChaoticMap* permMap,ChaoticMap* subMap,ChaoticMap* diffMap);
 
-    ChaoticCypher(ChaoticType, ChaoticType, ChaoticType);
 
-    static bytes generateSBox(const doubles &, size_t, bool, ChaoticType);
+private:
+    void setMode(int);
 
-    static bytes substitution(const bytes &, const doubles &, bool, ChaoticType);
+    bytes generateSBox();
+    void permutation();
+    void substitution();
+    void diffusion();
+    bytes encrypt();
+    bytes decrypt();
 
-    static bytes permutation(const bytes &, const doubles &, bool, ChaoticType);
+private:
+    const size_t IGNORE_ELEMENTS = 1000;
+    const size_t ITER_GEN_SBOX_DEFAULT = 1000;
+    const size_t SBOX_SIZE = 256;
 
-    static bytes diffusion(const bytes &, const doubles &, bool, ChaoticType);
 
-    bytes encrypt(const bytes &);
-
-    bytes decrypt(const bytes &);
+    void setKey(bytes key);
 };
 
-
-#endif //CHAOTIC_CHAOTICCYPHER_H
+#endif //CHAT_APP_CHAOTICCYPHER_H

@@ -1,14 +1,10 @@
-//
-// Created by Long Kenvy on 30/05/2022.
-//
-
 #include "Hash.h"
 
 #include <cstring>
 #include <sstream>
 #include <iomanip>
 
-Hash::SHA256::SHA256() : m_blocklen(0), m_bitlen(0) {
+SHA256::SHA256() : m_blocklen(0), m_bitlen(0) {
     m_state[0] = 0x6a09e667;
     m_state[1] = 0xbb67ae85;
     m_state[2] = 0x3c6ef372;
@@ -19,7 +15,7 @@ Hash::SHA256::SHA256() : m_blocklen(0), m_bitlen(0) {
     m_state[7] = 0x5be0cd19;
 }
 
-void Hash::SHA256::update(const byte *data, size_t length) {
+void SHA256::update(const byte* data, size_t length) {
     for (size_t i = 0; i < length; i++) {
         m_data[m_blocklen++] = data[i];
         if (m_blocklen == 64) {
@@ -32,15 +28,15 @@ void Hash::SHA256::update(const byte *data, size_t length) {
     }
 }
 
-void Hash::SHA256::update(const bytes &data) {
+void SHA256::update(const bytes& data) {
     update(data.data(), data.size());
 }
 
-void Hash::SHA256::update(const std::string &data) {
-    update(reinterpret_cast<const byte *> (data.c_str()), data.size());
+void SHA256::update(const std::string& data) {
+    update(reinterpret_cast<const byte*> (data.c_str()), data.size());
 }
 
-bytes Hash::SHA256::digest() {
+bytes SHA256::digest() {
     bytes hash(32);
 
     pad();
@@ -49,32 +45,31 @@ bytes Hash::SHA256::digest() {
     return hash;
 }
 
-uint_fast32_t Hash::SHA256::rotr(uint_fast32_t x, uint_fast32_t n) {
+uint32_t SHA256::rotr(uint32_t x, uint32_t n) {
     return (x >> n) | (x << (32 - n));
 }
 
-uint_fast32_t Hash::SHA256::choose(uint_fast32_t e, uint_fast32_t f, uint_fast32_t g) {
+uint32_t SHA256::choose(uint32_t e, uint32_t f, uint32_t g) {
     return (e & f) ^ (~e & g);
 }
 
-uint_fast32_t Hash::SHA256::majority(uint_fast32_t a, uint_fast32_t b, uint_fast32_t c) {
+uint32_t SHA256::majority(uint32_t a, uint32_t b, uint32_t c) {
     return (a & (b | c)) | (b & c);
 }
 
-uint_fast32_t Hash::SHA256::sig0(uint_fast32_t x) {
+uint32_t SHA256::sig0(uint32_t x) {
     return SHA256::rotr(x, 7) ^ SHA256::rotr(x, 18) ^ (x >> 3);
 }
 
-uint_fast32_t Hash::SHA256::sig1(uint_fast32_t x) {
+uint32_t SHA256::sig1(uint32_t x) {
     return SHA256::rotr(x, 17) ^ SHA256::rotr(x, 19) ^ (x >> 10);
 }
 
-void Hash::SHA256::transform() {
-    uint_fast32_t maj, xorA, ch, xorE, sum, newA, newE, m[64];
-    uint_fast32_t state[8];
+void SHA256::transform() {
+    uint32_t maj, xorA, ch, xorE, sum, newA, newE, m[64];
+    uint32_t state[8];
 
-    for (byte i = 0, j = 0;
-         i < 16; i++, j += 4) { // Split data in 32 bit blocks for the 16 first words
+    for (auto i = 0, j = 0; i < 16; i++, j += 4) { // Split data in 32 bit blocks for the 16 first words
         m[i] = (m_data[j] << 24) | (m_data[j + 1] << 16) | (m_data[j + 2] << 8) | (m_data[j + 3]);
     }
 
@@ -113,7 +108,7 @@ void Hash::SHA256::transform() {
     }
 }
 
-void Hash::SHA256::pad() {
+void SHA256::pad() {
 
     uint64_t i = m_blocklen;
     byte end = m_blocklen < 56 ? 56 : 64;
@@ -141,7 +136,7 @@ void Hash::SHA256::pad() {
     transform();
 }
 
-void Hash::SHA256::revert(bytes &hash) {
+void SHA256::revert(bytes& hash) {
     // SHA uses big endian byte ordering
     // Revert all bytes
     for (byte i = 0; i < 4; i++) {
@@ -149,4 +144,16 @@ void Hash::SHA256::revert(bytes &hash) {
             hash[i + (j * 4)] = (m_state[j] >> (24 - i * 8)) & 0x000000ff;
         }
     }
+}
+
+
+std::string toString(const bytes& digest) {
+    std::stringstream s;
+    s << std::setfill('0') << std::hex;
+
+    for (unsigned char i : digest) {
+        s << std::setw(2) << (unsigned int)i;
+    }
+
+    return s.str();
 }

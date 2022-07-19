@@ -15,8 +15,6 @@
     "strictNullChecks": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "esModuleInterop": true,
-    "moduleResolution": "Node",
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
   }

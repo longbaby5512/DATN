@@ -1,3 +1,4 @@
+import { AuthService } from './auth.service'
 import {
   Body,
   Controller,
@@ -5,70 +6,51 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  UseGuards,
-} from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './local.guard';
-import JwtAuthGuard from './jwt-auth.guard';
-import { GetUser } from '../models/decorators';
-import { CreateUserDTO, UserDTO } from '../models/dto';
+  Query,
+  UseGuards
+  } from '@nestjs/common'
+import { CreateUserDto } from '../user/dto/create-user.dto'
+import { ECDHService } from '../common/ecdh'
+import { GetUser } from './decorators/get-user.decorator'
+import { JwtGuard } from './guards/jwt.guard'
+import { LocalGuard } from './guards/local.guard'
+import { Log } from '../common/logger'
+import { LoginUserDto } from '../user/dto/login-user.dto'
+import { UserEntity } from '../user/serializers/user.serializer'
 
-@Controller('auth')
+@Controller()
 export class AuthController {
-  constructor(private readonly service: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() registationData: CreateUserDTO) {
-    await this.service.register(registationData);
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'User has been created',
-    };
+  async register(@Body() inputs: CreateUserDto) {
+    return await this.authService.register(inputs);
   }
 
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(LocalGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@GetUser() user: UserDTO) {
-    const token = await this.service.getAccessToken(user.id);
+  async login(@GetUser() user: UserEntity) {
+    const token = await this.authService.generateToken(user.id);
     user.password = undefined;
     user.salt = undefined;
-    user.numberOfDevices = undefined;
-    return {
-      statusCode: HttpStatus.OK,
-      data: {
-        user: user,
-        accessToken: token.accessToken,
-      },
-    };
+    return { ...user, token };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuard)
+  @Get('profile')
   @HttpCode(HttpStatus.OK)
-  @Post('logout')
-  async logout(@GetUser() user: UserDTO) {
-    await this.service.logout(user);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'User has been logged out',
-    };
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('whoami')
-  authenticate(@GetUser() user: UserDTO) {
+  async profile(@GetUser() user: UserEntity) {
     user.password = undefined;
     user.salt = undefined;
-    const active: boolean = user.numberOfDevices > 0;
-    user.numberOfDevices = undefined;
-    return {
-      statusCode: HttpStatus.OK,
-      data: {
-        user: {
-          ...user,
-          status: active,
-        },
-      },
-    };
+    return user;
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('finalkey')
+  @HttpCode(HttpStatus.OK)
+  async finalKey(@GetUser() user: UserEntity, @Query('theirPublicKey') theirPublicKey: string) {
+    const secret = ECDHService.generateSharedSecret(user.key.privateKey, theirPublicKey)
+    return ECDHService.generateFinalKey(user.key.publicKey, theirPublicKey, secret);
   }
 }

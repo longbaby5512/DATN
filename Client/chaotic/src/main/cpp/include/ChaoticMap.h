@@ -1,32 +1,39 @@
-//
-// Created by Long Kenvy on 28/05/2022.
-//
-
-#ifndef CHAOTIC_CHAOTICMAP_H
-#define CHAOTIC_CHAOTICMAP_H
+#ifndef CHAT_APP_CHAOTICMAP_H
+#define CHAT_APP_CHAOTICMAP_H
 
 #include "Utils.h"
 
-enum ChaoticType {
-    LOGISTIC = 0,
-    SIN = 1
-};
+class Logistic;
+class Sin;
 
 class ChaoticMap {
 public:
+    virtual doubles sequence (const doubles&, size_t) = 0;
+    virtual doubles key(const bytes&) = 0;
+    virtual std::string name() = 0;
 
-    static doubles generateSequence(ChaoticType type, const doubles &key, size_t iter);
-
-    static doubles generateKey(ChaoticType type, const bytes &digest);
-
-private:
-    static doubles Logistic(const doubles &, size_t);
-
-    static doubles Sin(const doubles &, size_t);
-
-    static doubles logisticKey(bytes digest);
-
-    static doubles sinKey(bytes digest);
+    static std::unique_ptr<ChaoticMap> create(int);
 };
 
-#endif //CHAOTIC_CHAOTICMAP_H
+class Logistic: public ChaoticMap {
+public:
+    doubles sequence(const doubles &, size_t) override;
+
+    doubles key(const bytes &) override;
+
+    std::string name() override;
+
+
+};
+
+class Sin: public ChaoticMap {
+public:
+    doubles sequence(const doubles &, size_t) override;
+
+    doubles key(const bytes &) override;
+
+    std::string name() override;
+
+};
+
+#endif //CHAT_APP_CHAOTICMAP_H

@@ -7,39 +7,36 @@
 #include <sstream>
 #include <iomanip>
 
-std::string Utils::byte2hex(const bytes& digest) {
-    std::stringstream s;
-    s << std::setfill('0') << std::hex;
-
-    for (unsigned char i : digest) {
-        s << std::setw(2) << (unsigned int)i;
+std::string byte2hex(const bytes& digest, size_t length) {
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (size_t i = 0; i < length; i++) {
+        ss << std::setw(2) << (int) digest[i];
     }
-    auto res = s.str();
-    std::transform(res.begin(), res.end(), res.begin(), ::toupper);
-    return res;
+    return ss.str();
 }
 
-bytes Utils::hex2byte(const std::string& hexStr) {
-    bytes digest;
+bytes hex2byte(const std::string& hexStr) {
+    auto digest = bytes(hexStr.length() / 2);
     for (size_t i = 0; i < hexStr.size(); i += 2) {
         std::string byteString = hexStr.substr(i, 2);
-        digest.push_back(static_cast<byte>(std::stoi(byteString, nullptr, 16)));
+        digest[i / 2] = (byte) strtol(byteString.c_str(), nullptr, 16);
     }
     return digest;
 }
 
-std::string Utils::bytes2string(const bytes& data) {
+std::string bytes2string(const bytes& data, size_t length) {
     std::string res;
-    std::for_each(std::execution::par, data.begin(), data.end(), [&](byte b) {
+    std::for_each(data.begin(), data.begin() + length, [&](byte b) {
         res += static_cast<char>(b);
     });
     return res;
 }
 
-bytes Utils::string2bytes(const std::string& data) {
-    bytes res;
-    std::for_each(std::execution::par, data.begin(), data.end(), [&](char c) {
-        res.push_back(static_cast<byte>(c));
+bytes string2bytes(const std::string& data) {
+    auto res = bytes(data.length());
+    std::for_each(data.begin(), data.end(), [&](char c) {
+        res[std::distance(data.begin(), std::find(data.begin(), data.end(), c))] = static_cast<byte>(c);
     });
     return res;
 }

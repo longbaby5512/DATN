@@ -1,24 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DesignSurface">
-    <option name="filePathToZoomLevelMap">
-      <map>
-        <entry key="..\:/DATN/Client/account_feature/src/main/res/layout/activity_account.xml" value="0.1" />
-        <entry key="..\:/DATN/Client/account_feature/src/main/res/layout/content_account.xml" value="0.1" />
-        <entry key="..\:/DATN/Client/account_feature/src/main/res/layout/fragment_forgot.xml" value="0.23505434782608695" />
-        <entry key="..\:/DATN/Client/account_feature/src/main/res/layout/fragment_login.xml" value="0.1" />
-        <entry key="..\:/DATN/Client/account_feature/src/main/res/layout/fragment_register.xml" value="0.1" />
-        <entry key="..\:/DATN/Client/app/src/main/res/layout/activity_splash.xml" value="0.1" />
-        <entry key="..\:/DATN/Client/chat_feature/src/main/res/layout/activity_main.xml" value="0.11626139817629179" />
-        <entry key="..\:/DATN/Client/chat_feature/src/main/res/layout/fragment_chat.xml" value="0.23505434782608695" />
-        <entry key="..\:/DATN/Client/chat_feature/src/main/res/layout/fragment_chats.xml" value="0.1" />
-        <entry key="..\:/DATN/Client/chat_feature/src/main/res/menu/menu_main.xml" value="0.2390625" />
-      </map>
-    </option>
-  </component>
-  <component name="ProjectResources">
-    <xml-schema-version>XMLSchema_1_1</xml-schema-version>
-  </component>
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>

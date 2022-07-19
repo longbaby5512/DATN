@@ -1,10 +1,15 @@
 #include <jni.h>
 #include <string>
-#include <vector>
-#include <android/log.h>
-#include "Utils.h"
+
 #include "ChaoticCypher.h"
 
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_karry_chaotic_ChaoticCypher_stringFromJNI(
+        JNIEnv *env,
+        jobject /* this */) {
+    std::string hello = "Hello from C++";
+    return env->NewStringUTF(hello.c_str());
+}
 
 bytes asByteVector(JNIEnv *env, jbyteArray src) {
     size_t size = env->GetArrayLength(src);
@@ -15,11 +20,13 @@ bytes asByteVector(JNIEnv *env, jbyteArray src) {
         res.push_back(buf[i]);
     }
     delete[] buf;
+    LOGD("%s", byte2hex(res).c_str());
     return res;
 }
 
 
 jbyteArray asJByteArray(JNIEnv *env, const bytes &data) {
+    LOGD("%s", byte2hex(data).c_str());
     auto *buff = (jbyte *) data.data();
     auto size = static_cast<jsize>(data.size());
     jbyteArray res = env->NewByteArray(size);
@@ -27,28 +34,29 @@ jbyteArray asJByteArray(JNIEnv *env, const bytes &data) {
     return res;
 }
 
-ChaoticType getType(JNIEnv *env, jobject obj) {
-    if (obj == nullptr) {
-        return ChaoticType::LOGISTIC;
+std::unique_ptr<ChaoticMap> getType(JNIEnv *pEnv, jobject pJobject) {
+    if (pJobject == nullptr) {
+        return ChaoticMap::create(0);
     }
-    jmethodID getTypeMethod = env->GetMethodID(env->FindClass("com/karry/chaotic/ChaoticType"),
-                                               "getType", "()I");
-    jint type = env->CallIntMethod(obj, getTypeMethod);
-    return static_cast<ChaoticType>(type);
+
+    jmethodID getTypeMethod = pEnv->GetMethodID(pEnv->FindClass("com/karry/chaotic/ChaoticType"),
+                                                "getType", "()I");
+    jint type = pEnv->CallIntMethod(pJobject, getTypeMethod);
+    LOGD("%d", reinterpret_cast<int>(type));
+    return ChaoticMap::create(type);
 }
 
 ChaoticCypher getCypher(JNIEnv *env, jobject permAlgm, jobject subAlgm, jobject diffAlgm) {
-    return ChaoticCypher::Builder()
-            .setPermutationAlgorithm(getType(env, permAlgm))
-            .setSubstitutionAlgorithm(getType(env, subAlgm))
-            .setDiffusionAlgorithm(getType(env, diffAlgm))
-            .build();
+    return ChaoticCypher(
+            getType(env, permAlgm),
+            getType(env, subAlgm),
+            getType(env, diffAlgm)
+    );
 }
 
-extern "C" JNIEXPORT jbyteArray
 
-JNICALL
-Java_com_karry_chaotic_ChaoticCypherNative_encrypt(
+extern "C" JNIEXPORT jbyteArray JNICALL
+Java_com_karry_chaotic_NativeLib_encrypt(
         JNIEnv *env,
         jobject /* this */,
         jbyteArray dataJava,
@@ -57,22 +65,17 @@ Java_com_karry_chaotic_ChaoticCypherNative_encrypt(
         jobject subAlgm,
         jobject diffAlgm
 ) {
-
     auto data = asByteVector(env, dataJava);
     auto key = asByteVector(env, keyJava);
-
     auto cypher = getCypher(env, permAlgm, subAlgm, diffAlgm);
-
-    cypher.init(ChaoticCypher::ENCRYPT, key);
+    cypher.init(ChaoticCypher::ENCRYPT_MODE, key);
+    LOGD("%s", cypher.info().c_str());
 
     return asJByteArray(env, cypher.doFinal(data));
 }
 
-
-extern "C" JNIEXPORT jbyteArray
-
-JNICALL
-Java_com_karry_chaotic_ChaoticCypherNative_decrypt(
+extern "C" JNIEXPORT jbyteArray JNICALL
+Java_com_karry_chaotic_NativeLib_decrypt(
         JNIEnv *env,
         jobject /* this */,
         jbyteArray dataJava,
@@ -81,13 +84,11 @@ Java_com_karry_chaotic_ChaoticCypherNative_decrypt(
         jobject subAlgm,
         jobject diffAlgm
 ) {
-
     auto data = asByteVector(env, dataJava);
     auto key = asByteVector(env, keyJava);
-
     auto cypher = getCypher(env, permAlgm, subAlgm, diffAlgm);
-
-    cypher.init(ChaoticCypher::DECRYPT, key);
+    cypher.init(ChaoticCypher::DECRYPT_MODE, key);
+    LOGD("%s", cypher.info().c_str());
 
     return asJByteArray(env, cypher.doFinal(data));
 }

@@ -1,45 +1,40 @@
+import { CreateUserDto } from './dto/create-user.dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../models/entities';
-import { Repository } from 'typeorm';
-import { CreateUserDTO, UpdatedUserDTO, UserDTO } from '../models/dto';
+import { Log } from '../common/logger';
+import { User } from './entities/user.entity';
+import { UserEntity } from './serializers/user.serializer';
+import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User) private readonly repo: Repository<User>,
+    @InjectRepository(UserRepository)
+    private readonly userRepository: UserRepository,
   ) {}
 
-  getByEmail = async (email: string): Promise<UserDTO> => {
-    return await this.repo.findOne({ email }).then((user: User) => {
-      return UserDTO.fromEntity(user);
-    });
-  };
+  async findAll(relations?: string[], throws?: boolean) {
+    return await this.userRepository.findAllEntities(relations, throws);
+  }
 
-  getById = async (id: string): Promise<UserDTO> => {
-    return await this.repo.findOne({ id }).then((user: User) => {
-      return UserDTO.fromEntity(user);
-    });
-  };
+  async findById(id: number, relations?: string[], throws?: boolean) {
+    return await this.userRepository.findEntityById(id, relations, throws);
+  }
 
-  getAll = async (start?: number, limit?: number): Promise<UserDTO[]> => {
-    const users = await this.repo.find({
-      skip: start,
-      take: limit,
-      order: {
-        createdAt: 'DESC',
-      },
-    });
-    return users.map(UserDTO.fromEntity);
-  };
+  async findByEmail(email: string, relations?: string[], throws?: boolean) {
+    return await this.userRepository.findByEmail(email, relations, throws);
+  }
 
-  create = async (createUserDTO: CreateUserDTO): Promise<UserDTO> => {
-    const user = this.repo.create(createUserDTO);
-    return await this.repo.save(user).then(UserDTO.fromEntity);
-  };
+  async create(inputs: any) {
+    // Log.logObject(UserService.name, inputs);
+    return await this.userRepository.createEntity(inputs);
+  }
 
-  update = async (updatedUserDTO: UpdatedUserDTO) => {
-    const user = this.repo.create(updatedUserDTO);
-    return await this.repo.save(user).then(UserDTO.fromEntity);
-  };
+  async update(user: UserEntity, inputs: User) {
+    return await this.userRepository.updateEntity(user, inputs);
+  }
+
+  async delete(id: number) {
+    return await this.userRepository.deleteEntityById(id);
+  }
 }

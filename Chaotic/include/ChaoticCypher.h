@@ -6,63 +6,72 @@
 #define CHAOTIC_CHAOTICCYPHER_H
 
 #include <functional>
+#include <memory>
 
 #include "Utils.h"
 #include "ChaoticMap.h"
-#include "Constants.h"
 
 class ChaoticCypher {
 public:
+    static constexpr int ENCRYPT_MODE = 0;
+    static constexpr int DECRYPT_MODE = 1;
 
-    enum Mode {
-        ENCRYPT = 0,
-        DECRYPT = 1,
-    };
+public:
 
-    void init(Mode, const bytes&);
-    void init(Mode, const std::string&);
+    void init(int, const bytes &);
 
-
-    bytes doFinal(const bytes&);
-    bytes doFinal(const std::string&);
+    void init(int, const std::string &);
 
 
+    bytes doFinal(bytes &);
 
-    class Builder {
-    public:
-        Builder& setPermutationAlgorithm(ChaoticType);
-        Builder& setSubstitutionAlgorithm(ChaoticType);
-        Builder& setDiffusionAlgorithm(ChaoticType);
-
-        ChaoticCypher build();
-
-    private:
-        ChaoticType permType = ChaoticType::LOGISTIC;
-        ChaoticType subType = ChaoticType::LOGISTIC;
-        ChaoticType diffType = ChaoticType::LOGISTIC;
-    };
+    bytes doFinal(std::string &);
 
 
-    std::string info();
+    friend std::ostream &operator<<(std::ostream &, const ChaoticCypher &);
 
 private:
-    ChaoticType permType;
-    ChaoticType subType;
-    ChaoticType diffType;
-    doubles key1, key2, key3;
+    std::unique_ptr<ChaoticMap> permMap;
+    std::unique_ptr<ChaoticMap> subMap;
+    std::unique_ptr<ChaoticMap> diffMap;
+    doubles keyPerm, keySub, keyDiff;
     int mode{};
+    bytes data;
+public:
+    explicit ChaoticCypher(
+            std::unique_ptr<ChaoticMap> permMap = std::make_unique<Logistic>(),
+            std::unique_ptr<ChaoticMap> subMap = std::make_unique<Logistic>(),
+            std::unique_ptr<ChaoticMap> diffMap = std::make_unique<Logistic>()
+    );
 
-    explicit ChaoticCypher();
-    ChaoticCypher(ChaoticType, ChaoticType, ChaoticType);
+    ChaoticCypher(ChaoticMap* permMap,ChaoticMap* subMap,ChaoticMap* diffMap);
 
-    static bytes generateSBox(const doubles&, size_t, bool, ChaoticType);
 
-    static bytes substitution(const bytes&, const doubles&, bool, ChaoticType);
-    static bytes permutation(const bytes&, const doubles&, bool, ChaoticType);
-    static bytes diffusion(const bytes&, const doubles&, bool, ChaoticType);
+public:
+    void setMode(int);
 
-    bytes encrypt(const bytes&);
-    bytes decrypt(const bytes&);
+    auto getData() const -> const bytes & {
+        return data;
+    }
+
+    void setData(const bytes &data) {
+        this->data = data;
+    }
+
+    bytes generateSBox();
+    void permutation();
+    void substitution();
+    void diffusion();
+    bytes encrypt();
+    bytes decrypt();
+
+private:
+    const size_t IGNORE_ELEMENTS = 1000;
+    const size_t ITER_GEN_SBOX_DEFAULT = 1000;
+    const size_t SBOX_SIZE = 256;
+
+
+    void setKey(bytes key);
 };
 
 
